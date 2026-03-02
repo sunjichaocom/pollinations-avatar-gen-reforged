@@ -1,0 +1,8 @@
+{
+    "display_name": "Pollinations Avatar Gen",
+    "js": "index.js",
+    "css": "style.css",
+    "author": "Nidelon",
+    "version": "1.0.0",
+    "description": "Extension that generates character avatars based on their text descriptions using Pollinations.ai"
+}

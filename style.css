@@ -1,0 +1,18 @@
+.avatar-generator-settings .inline-drawer-content {
+    padding: 10px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 5px;
+}
+
+.avatar-generator-settings label {
+    display: block;
+    margin-top: 10px;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+option.avatar-gen-option {
+    background-color: var(--black50a);
+    color: var(--smart-theme-body-color); 
+    font-weight: bold;
+}
