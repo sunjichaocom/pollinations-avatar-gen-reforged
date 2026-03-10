@@ -39,7 +39,7 @@ export function loadSettings() {
 }
 
 // [EN] API call to check Pollinations account balance for multiple keys
-// [ZH] API 并发请求检查所有 Pollinations 账号余额 (带详细账单)
+// [ZH] API 并发请求检查所有 Pollinations 账号余额 (带详细账单，优化显示颜色与精度)
 async function checkBalance() {
     const tokenStr = extension_settings[extensionName].pollinationsToken;
     const keys = tokenStr ? tokenStr.split(/[\n,]+/).map(k => k.trim()).filter(k => k) : [];
@@ -60,7 +60,7 @@ async function checkBalance() {
             if (res.ok) {
                 const data = await res.json();
                 const bal = typeof data.balance === 'number' ? data.balance : 0;
-                extension_settings[extensionName].keyBalances[token] = bal;
+                extension_settings[extensionName].keyBalances[token] = bal; // 运算保持原值
                 return { success: true, key: maskedKey, balance: bal };
             }
             return { success: false, key: maskedKey };
@@ -72,28 +72,29 @@ async function checkBalance() {
     results.forEach(r => {
         if (r.success) {
             totalBalance += r.balance;
-            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.8; font-family:monospace;">${r.key}</span> <b style="color:#4CAF50">${r.balance} 💎</b></div>`;
+            // [修改点]：数值统一保留 5 位小数，颜色改为黄色 (#FFEB3B) 以便在绿色背景下看清
+            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.9; font-family:monospace;">${r.key}</span> <b style="color:#FFEB3B">${r.balance.toFixed(5)} 💎</b></div>`;
         } else {
-            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.8; font-family:monospace;">${r.key}</span> <b style="color:#ff5252">❌ Error</b></div>`;
+            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.9; font-family:monospace;">${r.key}</span> <b style="color:#ffb7b7">❌ Error</b></div>`;
         }
     });
     
     saveSettingsDebounced();
     toastr.clear(loading);
     
-    // 解决 JS 浮点数相加精度问题 (如 1.5 + 1.2 = 2.700000002)
-    totalBalance = Math.round(totalBalance * 100) / 100;
+    // [修改点]：总额也保留 5 位小数显示
+    const displayTotal = totalBalance.toFixed(5);
     
     const summaryMsg = `
-        <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">
-            ${t('toast_balance_summary').replace('{0}', totalBalance)}
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px; color: #fff;">
+            ${t('toast_balance_summary').replace('{0}', displayTotal)}
         </div>
-        <div style="font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 8px; max-height: 150px; overflow-y: auto;">
+        <div style="font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.4); padding-top: 8px; max-height: 150px; overflow-y: auto; color: #fff;">
             ${detailsHtml}
         </div>
     `;
     
-    toastr.success(summaryMsg, TOAST_TITLE, { timeOut: 8000, extendedTimeOut: 5000, escapeHtml: false });
+    toastr.success(summaryMsg, TOAST_TITLE, { timeOut: 10000, extendedTimeOut: 5000, escapeHtml: false });
 }
 
 // [EN] Fetches available text and image models from Pollinations APIs
