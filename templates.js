@@ -13,7 +13,7 @@ export const getSettingsHTML = (settings, t) => `
                 <a href="https://enter.pollinations.ai/" target="_blank" class="menu_button" style="text-align: center; flex-grow: 1;">${t('get_api_key')}</a>
                 <button id="ag_btn_balance" class="menu_button" style="flex-grow: 1;">${t('check_balance')}</button>
             </div>
-            <input type="password" id="ag_poll_token" class="text_pole" value="${settings.pollinationsToken || ""}" placeholder="API Key">
+            <textarea id="ag_poll_token" class="text_pole" placeholder="API Key 1\nAPI Key 2" style="width: 100%; height: 50px; resize: vertical; font-size: 12px; margin-bottom: 5px;">${settings.pollinationsToken || ""}</textarea>
             
             <hr style="margin: 15px 0; border-color: rgba(255,255,255,0.1);">
             
@@ -73,7 +73,6 @@ export const getSettingsHTML = (settings, t) => `
                 Reforged with ⚔️ by <a href="https://github.com/sunjichaocom/pollinations-avatar-gen-reforged" target="_blank" style="color: inherit; font-weight: bold; text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.4);">Sun</a><br>
                 <span style="font-size: 11px; opacity: 0.8;">Based on original work by <a href="https://github.com/Nidelon/pollinations-avatar-gen" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.4);">Nidelon</a></span>
             </div>
-
         </div>
     </div>
 </div>`;

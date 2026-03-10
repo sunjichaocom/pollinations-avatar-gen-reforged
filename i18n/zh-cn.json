@@ -1,7 +1,7 @@
 {
   "ext_title": "Pollinations 高级头像生成",
   "btn_generate": "深度定制头像 (Pollinations)",
-  "api_key_label": "API Key (支持查余额):",
+  "api_key_label": "API Key (支持多Key轮换，每行一个):",
   "get_api_key": "获取 API Key",
   "check_balance": "💎 查余额",
   "quick_tags_label": "快捷标签管理 (Quick Tags):",
@@ -19,11 +19,11 @@
   "btn_clear_text": "清空",
   "loading_models": "加载中...",
   
-  "toast_balance": "💎 剩余 Pollen 钻石:",
+  "toast_balance_summary": "总计 Pollen 钻石: {0} 💎",
   "toast_save_success": "保存成功！",
   "toast_delete_sys_error": "系统预设不可删除！",
   "toast_need_api_key": "请先填写 API Key！",
-  "toast_checking_balance": "正在查询余额...",
+  "toast_checking_balance": "正在查询所有 Key 的余额...",
   "toast_api_error": "API 请求错误，请检查网络。",
   "toast_cancelled": "已取消换头像操作",
   "toast_extracting": "正在推敲灵感提示词...",

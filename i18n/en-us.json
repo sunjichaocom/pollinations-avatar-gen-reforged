@@ -1,7 +1,7 @@
 {
   "ext_title": "Pollinations Advanced Avatar Gen",
   "btn_generate": "Deep Custom Avatar (Pollinations)",
-  "api_key_label": "API Key (Balance Check Supported):",
+  "api_key_label": "API Key (Multi-key rotation, 1 per line):",
   "get_api_key": "Get API Key",
   "check_balance": "💎 Check Balance",
   "quick_tags_label": "Quick Tags Management:",
@@ -19,11 +19,11 @@
   "btn_clear_text": "Clear",
   "loading_models": "Loading...",
   
-  "toast_balance": "💎 Remaining Pollen:",
+  "toast_balance_summary": "Total Pollen: {0} 💎",
   "toast_save_success": "Saved successfully!",
   "toast_delete_sys_error": "System presets cannot be deleted!",
   "toast_need_api_key": "API Key is required!",
-  "toast_checking_balance": "Checking balance...",
+  "toast_checking_balance": "Checking balance for all keys...",
   "toast_api_error": "API Error, please check your network.",
   "toast_cancelled": "Operation cancelled.",
   "toast_extracting": "Extracting visual prompt...",

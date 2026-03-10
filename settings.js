@@ -12,7 +12,9 @@ export const defaultSettings = {
     imageModel: "flux", promptModel: "openai", quality: "1024x1024",
     systemPrompt: defaultPrompts["常规默认 (Default / 通用混合)"], promptPresets: Object.assign({}, defaultPrompts),
     jailbreakPrompt: defaultJailbreaks["通用型 (数据接口伪装)"], jailbreakPresets: Object.assign({}, defaultJailbreaks),
-    quickTags: Object.assign({}, defaultQuickTags)
+    quickTags: Object.assign({}, defaultQuickTags),
+    keyBalances: {},        // 用于缓存每个 Key 的余额
+    lastUsedKeyIndex: 0     // 用于轮询时的游标
 };
 
 // [EN] Loads settings from ST's global storage and applies defaults
@@ -36,18 +38,62 @@ export function loadSettings() {
     }
 }
 
-// [EN] API call to check Pollinations account balance
-// [ZH] API 请求检查 Pollinations 账号余额
+// [EN] API call to check Pollinations account balance for multiple keys
+// [ZH] API 并发请求检查所有 Pollinations 账号余额 (带详细账单)
 async function checkBalance() {
-    const token = extension_settings[extensionName].pollinationsToken;
-    if (!token) return toastr.warning(t('toast_need_api_key'), TOAST_TITLE);
+    const tokenStr = extension_settings[extensionName].pollinationsToken;
+    const keys = tokenStr ? tokenStr.split(/[\n,]+/).map(k => k.trim()).filter(k => k) : [];
+    
+    if (keys.length === 0) return toastr.warning(t('toast_need_api_key'), TOAST_TITLE);
+    
     let loading = toastr.info(`<i class="fa-solid fa-spinner fa-spin" style="margin-right:8px;"></i>${t('toast_checking_balance')}`, TOAST_TITLE, { timeOut: 0, extendedTimeOut: 0, tapToDismiss: false, escapeHtml: false });
-    try {
-        const res = await fetch('https://gen.pollinations.ai/account/balance', { headers: { 'Authorization': `Bearer ${token}` } });
-        if (!res.ok) throw new Error();
-        const data = await res.json();
-        toastr.clear(loading); toastr.success(`${t('toast_balance')} ${data.balance || 0}`, TOAST_TITLE);
-    } catch (e) { toastr.clear(loading); toastr.error(t('toast_api_error'), TOAST_TITLE); }
+    
+    if (!extension_settings[extensionName].keyBalances) extension_settings[extensionName].keyBalances = {};
+    
+    let totalBalance = 0;
+    let detailsHtml = "";
+    
+    const results = await Promise.all(keys.map(async (token, index) => {
+        const maskedKey = token.length > 10 ? `${token.slice(0, 4)}...${token.slice(-4)}` : `Key ${index + 1}`;
+        try {
+            const res = await fetch('https://gen.pollinations.ai/account/balance', { headers: { 'Authorization': `Bearer ${token}` } });
+            if (res.ok) {
+                const data = await res.json();
+                const bal = typeof data.balance === 'number' ? data.balance : 0;
+                extension_settings[extensionName].keyBalances[token] = bal;
+                return { success: true, key: maskedKey, balance: bal };
+            }
+            return { success: false, key: maskedKey };
+        } catch (e) {
+            return { success: false, key: maskedKey };
+        }
+    }));
+    
+    results.forEach(r => {
+        if (r.success) {
+            totalBalance += r.balance;
+            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.8; font-family:monospace;">${r.key}</span> <b style="color:#4CAF50">${r.balance} 💎</b></div>`;
+        } else {
+            detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.8; font-family:monospace;">${r.key}</span> <b style="color:#ff5252">❌ Error</b></div>`;
+        }
+    });
+    
+    saveSettingsDebounced();
+    toastr.clear(loading);
+    
+    // 解决 JS 浮点数相加精度问题 (如 1.5 + 1.2 = 2.700000002)
+    totalBalance = Math.round(totalBalance * 100) / 100;
+    
+    const summaryMsg = `
+        <div style="font-size: 14px; font-weight: bold; margin-bottom: 8px;">
+            ${t('toast_balance_summary').replace('{0}', totalBalance)}
+        </div>
+        <div style="font-size: 12px; border-top: 1px dashed rgba(255,255,255,0.3); padding-top: 8px; max-height: 150px; overflow-y: auto;">
+            ${detailsHtml}
+        </div>
+    `;
+    
+    toastr.success(summaryMsg, TOAST_TITLE, { timeOut: 8000, extendedTimeOut: 5000, escapeHtml: false });
 }
 
 // [EN] Fetches available text and image models from Pollinations APIs

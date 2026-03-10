@@ -7,7 +7,6 @@ import { getOverrideModalTemplate, getConfirmPromptTemplate, getSelectImageTempl
 
 // [EN] Wait for specified milliseconds / [ZH] 暂停执行指定毫秒数（防渲染卡死）
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
 const TOAST_TITLE = "Pollinations Avatar Gen Reforged";
 const STICKY_TOAST_OPTIONS = { timeOut: 0, extendedTimeOut: 0, tapToDismiss: false, escapeHtml: false };
 
@@ -19,7 +18,56 @@ function generateQuickTagsHtml() {
     ).join('');
 }
 
-// [EN] Display Step 1 Modal: User custom overrides / [ZH] 弹窗 1：拦截输入用户额外定制需求
+// 【新增】智能 API Key 路由器 (针对 Spore 小额度优化的 Weighted Round-Robin)
+function getBestApiKey() {
+    const settings = extension_settings[extensionName];
+    if (!settings.pollinationsToken) return "";
+
+    const keys = settings.pollinationsToken.split(/[\n,]+/).map(k => k.trim()).filter(k => k);
+    if (keys.length === 0) return "";
+    if (keys.length === 1) return keys[0]; 
+
+    if (!settings.keyBalances) settings.keyBalances = {};
+
+    // 1. 没查过余额的新 Key，默认给 1.5 的权重，给它个上场扣费的机会
+    keys.forEach(k => {
+        if (typeof settings.keyBalances[k] !== 'number') settings.keyBalances[k] = 1.5;
+    });
+
+    // 2. 找到当前最大余额
+    let maxBalance = -Infinity;
+    keys.forEach(k => {
+        if (settings.keyBalances[k] > maxBalance) maxBalance = settings.keyBalances[k];
+    });
+
+    // 3. 如果所有号都没钱了（<=0），强行全体轮询兜底，听天由命
+    if (maxBalance <= 0) {
+        settings.lastUsedKeyIndex = ((settings.lastUsedKeyIndex || 0) + 1) % keys.length;
+        return keys[settings.lastUsedKeyIndex];
+    }
+
+    // 4. 精准过滤：只挑选【余额大于0】且【差距在 1 以内】的健康 Key 参与轮流消耗
+    const candidateKeys = keys.filter(k => settings.keyBalances[k] > 0 && settings.keyBalances[k] >= maxBalance - 1);
+
+    if (candidateKeys.length === 0) {
+        settings.lastUsedKeyIndex = ((settings.lastUsedKeyIndex || 0) + 1) % keys.length;
+        return keys[settings.lastUsedKeyIndex];
+    }
+
+    // 5. 在这些优秀的候选人中轮询
+    settings.lastUsedKeyIndex = ((settings.lastUsedKeyIndex || 0) + 1) % candidateKeys.length;
+    return candidateKeys[settings.lastUsedKeyIndex];
+}
+
+// 【新增】本地缓存动态扣减器
+function deductLocalBalance(key, amount) {
+    const settings = extension_settings[extensionName];
+    if (settings.keyBalances && typeof settings.keyBalances[key] === 'number') {
+        settings.keyBalances[key] -= amount; 
+        // 不保存到磁盘，只在内存生效，避免频繁 I/O
+    }
+}
+
 async function inputOverridesUI(initialValue = "") {
     return new Promise((resolve) => {
         const modalId = "ag-override-modal-" + Date.now();
@@ -189,8 +237,11 @@ async function getVisualPrompt(char, userOverrides, textModel) {
     let apiUrl = settings.customTextUrl;
     if (apiUrl.includes("/text/") && apiUrl.includes("pollinations.ai")) apiUrl = "https://gen.pollinations.ai/v1/chat/completions";
     const requestBody = { model: textModel || "openai", messages:[ { role: "system", content: finalSystemPrompt }, { role: "user", content: userPrompt } ] };
+    
     const headers = { "Content-Type": "application/json" };
-    if (settings.pollinationsToken) headers["Authorization"] = `Bearer ${settings.pollinationsToken.trim()}`;
+    // 【核心注入：动态获取最优 Key】
+    const selectedKey = getBestApiKey();
+    if (selectedKey) headers["Authorization"] = `Bearer ${selectedKey}`;
 
     try {
         const controller = new AbortController();
@@ -198,9 +249,19 @@ async function getVisualPrompt(char, userOverrides, textModel) {
         const response = await fetch(apiUrl, { method: "POST", headers: headers, body: JSON.stringify(requestBody), signal: controller.signal });
         clearTimeout(timeoutId);
 
-        if (!response.ok) return { error: t('err_server_http') + response.status + ")" }; 
+        if (!response.ok) {
+            // 被拒绝时拉黑此 Key（假扣9999点），促使算法切换
+            if (response.status === 401 || response.status === 403 || response.status === 429) {
+                if (selectedKey) deductLocalBalance(selectedKey, 9999);
+            }
+            return { error: t('err_server_http') + response.status + ")" }; 
+        }
+
         const data = await response.json();
         if (data.choices && data.choices.length > 0) {
+            // 文本请求成功，假扣除 1 点
+            if (selectedKey) deductLocalBalance(selectedKey, 1);
+            
             const rawContent = data.choices[0].message.content.trim();
             const checkContent = rawContent.toLowerCase();
             if (checkContent.startsWith("i'm sorry") || checkContent.startsWith("sorry") || checkContent.includes("cannot fulfill") || checkContent.includes("as an ai") || checkContent.includes("抱歉") || checkContent.includes("无法满足")) {
@@ -217,7 +278,10 @@ async function fetchMultipleImages(prompt, count, tempModel) {
     const settings = extension_settings[extensionName];
     const [width, height] = settings.quality.split('x');
     const promises = [];
-    const tokenStr = settings.pollinationsToken ? `&key=${settings.pollinationsToken.trim()}` : '';
+    
+    // 【核心注入：动态获取最优 Key】
+    const selectedKey = getBestApiKey();
+    const tokenStr = selectedKey ? `&key=${selectedKey}` : '';
 
     for (let i = 0; i < count; i++) {
         const seed = Math.floor(Math.random() * 2147483647);
@@ -231,7 +295,14 @@ async function fetchMultipleImages(prompt, count, tempModel) {
         );
     }
     const results = await Promise.all(promises);
-    return results.filter(b => b !== null); 
+    const validResults = results.filter(b => b !== null);
+    
+    // 生图成功后，按生成成功的张数假扣费
+    if (selectedKey && validResults.length > 0) {
+        deductLocalBalance(selectedKey, validResults.length);
+    }
+    
+    return validResults; 
 }
 
 // [EN] Convert remote Blob to local PNG Canvas / [ZH] 转换图像格式以供保存
