@@ -1,18 +1,64 @@
-.avatar-generator-settings .inline-drawer-content {
-    padding: 10px;
-    background: rgba(0, 0, 0, 0.2);
-    border-radius: 5px;
+/* [EN] Modal Overlay Background / [ZH] 背景遮罩层 */
+.ag-modal-overlay { 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+    background: rgba(0,0,0,0.8); z-index: 99999; 
+    display: flex; justify-content: center; align-items: center; 
+    padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 0.2s; 
 }
 
-.avatar-generator-settings label {
-    display: block;
-    margin-top: 10px;
-    margin-bottom: 5px;
-    font-weight: bold;
+/* [EN] Main Container (Flex Layout) / [ZH] 核心容器：Flex 纵向布局 */
+.ag-modal-box { 
+    background: var(--SmartThemeBlurTintColor, #222); 
+    padding: 20px; border-radius: 12px; 
+    width: 100%; max-width: 550px; 
+    color: var(--SmartThemeBodyColor, #eee); box-shadow: 0 4px 20px rgba(0,0,0,0.6); 
+    display: flex; flex-direction: column; max-height: 90vh;
 }
 
-option.avatar-gen-option {
-    background-color: var(--black50a);
-    color: var(--smart-theme-body-color); 
-    font-weight: bold;
+/* [EN] Mobile Fullscreen Adaptation / [ZH] 手机端专属全屏适配 */
+@media screen and (max-width: 768px) {
+    .ag-modal-box {
+        width: calc(100vw - 20px) !important;
+        height: calc(100vh - 100px) !important;
+        max-height: calc(100vh - 100px) !important;
+        max-width: none !important;
+        padding: 15px;
+    }
+}
+
+/* [EN] Textarea Box / [ZH] 文本框：自动吸收剩余高度 */
+.ag-textarea { 
+    width: 100%; flex-grow: 1; min-height: 100px;
+    background: var(--SmartThemeBotMesColor, #333); color: inherit; 
+    padding: 12px; border-radius: 8px; box-sizing: border-box; 
+    border: 1px solid rgba(255,255,255,0.2); font-size: 14px; resize: none; 
+}
+
+/* [EN] Base Component Styles / [ZH] 基础组件样式 */
+.ag-select { width: 100%; padding: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #555; border-radius: 4px; }
+.ag-btn-cancel { padding: 10px; background: #555; }
+.ag-btn-confirm { padding: 10px; background: #4CAF50; color: white; }
+.ag-btn-retry { padding: 10px; background: #ff9800; color: white; }
+
+/* [EN] Quick Tags / [ZH] 快捷标签 */
+.ag-quick-tag { padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; transition: 0.2s; color: #eee; }
+.ag-quick-tag:hover { background: rgba(255,255,255,0.2); }
+
+/* [EN] Generated Images Grid / [ZH] 图片生成网格 */
+.ag-selectable-img { width: 100%; object-fit: cover; aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; background: #000; }
+.ag-selectable-img.selected { border-color: #4CAF50 !important; transform: scale(0.95); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5); filter: brightness(0.8); }
+
+/* [EN] Magnifying Glass Icon / [ZH] 放大镜图标 */
+.ag-mag-icon { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 10; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+.ag-mag-icon:hover { background: rgba(255,255,255,0.4); }
+
+/* [EN] Fullscreen Image Preview / [ZH] 全屏大图容器：完美居中 */
+#ag-fullscreen-preview { 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+    background: rgba(0,0,0,0.9); z-index: 100000; display: none; 
+    justify-content: center; align-items: center; cursor: ew-resize; user-select: none; 
+}
+#ag-fullscreen-preview img { 
+    max-width: 95vw; max-height: 95vh; object-fit: contain; 
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 8px; pointer-events: none; margin: auto;
 }
