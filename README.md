@@ -54,19 +54,38 @@ An advanced extension for [SillyTavern](https://github.com/SillyTavern/SillyTave
 
 ---
 
-## 🚀 Usage
+## 🚀 Usage & Workflow
 
 1. Open a chat with any character.
 2. Click the new **Portrait Button** on the top action row, OR click **More...** and select **Deep Custom Avatar** from the dropdown menu.
+   <br>
+   <img src="assets/menu.png" width="300" alt="Entry Point">
+
 3. Follow the intuitive on-screen workflow: 
-   `Add Extra Needs -> Confirm Prompt -> Select Best Image -> Save`.
+   
+   **Step 1: Extra Customization Needs**
+   Select your quick tags and extraction model. You can even use your currently active SillyTavern Chat Model (Current API) for extraction!
+   <br>
+   <img src="assets/extra_needs.png" width="350" alt="Extra Needs"> &nbsp; <img src="assets/extra_needs_current.png" width="350" alt="Current Model Override">
+
+   **Step 2: Confirm Visual Prompt**
+   Tweak the extracted prompt, select your preferred image generation model, and set the batch size.
+   <br>
+   <img src="assets/confirm.png" width="400" alt="Confirm Prompt">
+
+   **Step 3: Gallery Selection**
+   Once generated, preview all candidates in a grid. Click the magnifier to view them in full resolution, select your favorite, and hit Confirm to save!
+   <br>
+   <img src="assets/gallery.png" width="400" alt="Gallery Selection">
 
 ---
 
 ## ⚙️ Settings
 
-You can configure the extension in the **Extensions -> Pollinations Avatar Gen Reforged** tab.
+You can fully configure the extension in the **Extensions -> Pollinations Avatar Gen** tab.
 Here you can manage your API key, check your balance, select AI models, and fully customize your Style Prompts, Jailbreaks, and Quick Tags.
+
+<img src="assets/settings.png" width="400" alt="Settings Panel">
 
 ---
 
