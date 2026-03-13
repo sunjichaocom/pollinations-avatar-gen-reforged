@@ -269,8 +269,9 @@ async function selectImageUI(newBlobs, char, pinnedBlobs = []) {
             
             btn.html(originalHtml).css('pointer-events', 'auto');
             
-            if (isSuccess) toastr.success("图片已成功保存至该角色的展示图库！", TOAST_TITLE);
-            else toastr.error("保存图库失败", TOAST_TITLE);
+            // 【修改点】优化了提示文案，明确提示保存的是“当前选中的图片”
+            if (isSuccess) toastr.success("✅ 当前选中的图片（绿框）已成功保存至该角色的展示图库！", TOAST_TITLE);
+            else toastr.error("❌ 保存图库失败", TOAST_TITLE);
         });
 
         $(`#${modalId}-retry`).on('click', () => {
