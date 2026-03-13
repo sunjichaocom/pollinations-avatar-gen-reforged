@@ -71,7 +71,8 @@ export const getSettingsHTML = (settings, t) => `
 
             <div style="text-align: center; margin-top: 25px; margin-bottom: 5px; font-size: 12px; color: var(--SmartThemeBodyColor); opacity: 0.6; line-height: 1.6;">
                 Reforged with ⚔️ by <a href="https://github.com/sunjichaocom/pollinations-avatar-gen-reforged" target="_blank" style="color: inherit; font-weight: bold; text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.4);">Sun</a><br>
-                <span style="font-size: 11px; opacity: 0.8;">Based on original work by <a href="https://github.com/Nidelon/pollinations-avatar-gen" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.4);">Nidelon</a></span>
+                <span style="font-size: 11px; opacity: 0.8;">Based on original work by <a href="https://github.com/Nidelon/pollinations-avatar-gen" target="_blank" style="color: inherit; text-decoration: none; border-bottom: 1px dashed rgba(255,255,255,0.4);">Nidelon</a></span><br>
+                <span id="ag_version_info" style="font-size: 10px; opacity: 0.5; font-family: monospace; letter-spacing: 0.5px;">Loading version...</span>
             </div>
         </div>
     </div>
@@ -85,9 +86,9 @@ export const getResetModalTemplate = (modalId, t) => `
         <h3 style="margin-top: 0; color: #f44336;">${t('modal_reset_title') || '确认初始化插件？'}</h3>
         <p style="font-size: 14px; color: #ccc; margin-bottom: 20px;">${t('modal_reset_desc') || '此操作将恢复所有预设和设置到默认状态。'}</p>
         <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button id="${modalId}-keep" class="menu_button ag-btn-retry">${t('btn_reset_keep_key') || '保留 API Key 并初始化'}</button>
-            <button id="${modalId}-full" class="menu_button" style="padding: 10px; background: #f44336; color: white; border: none; border-radius: 5px;">${t('btn_reset_full') || '彻底清空所有数据'}</button>
-            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel">${t('modal_cancel') || '取消'}</button>
+            <button id="${modalId}-keep" class="menu_button ag-action-btn ag-btn-retry"><i class="fa-solid fa-key"></i> ${t('btn_reset_keep_key') || '保留 API Key 并初始化'}</button>
+            <button id="${modalId}-full" class="menu_button" style="padding: 10px; background: #f44336; color: white; border: none; border-radius: 5px;"><i class="fa-solid fa-bomb"></i> ${t('btn_reset_full') || '彻底清空所有数据'}</button>
+            <button id="${modalId}-cancel" class="menu_button ag-action-btn ag-btn-cancel"><i class="fa-solid fa-xmark"></i> ${t('modal_cancel') || '取消'}</button>
         </div>
     </div>
 </div>`;
@@ -116,8 +117,8 @@ export const getOverrideModalTemplate = (modalId, tagsHtml, textModelOptions, t)
         </div>
 
         <div style="display: flex; justify-content: space-between; gap: 10px; margin-top: 20px;">
-            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel" style="flex: 1;">${t('modal_cancel') || '取消'}</button>
-            <button id="${modalId}-confirm" class="menu_button ag-btn-confirm" style="flex: 1.5;">${t('modal_extract') || '提取提示词'} <i class="fa-solid fa-arrow-right"></i></button>
+            <button id="${modalId}-cancel" class="menu_button ag-action-btn ag-btn-cancel" style="flex: 1;"><i class="fa-solid fa-xmark"></i> ${t('modal_cancel') || '取消'}</button>
+            <button id="${modalId}-confirm" class="menu_button ag-action-btn ag-btn-confirm" style="flex: 1.5;">${t('modal_extract') || '提取提示词'} <i class="fa-solid fa-arrow-right"></i></button>
         </div>
     </div>
 </div>`;
@@ -152,34 +153,31 @@ export const getConfirmPromptTemplate = (modalId, modelOptions, tagsHtml, t) => 
         </div>
         
         <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 20px;">
-            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel" style="flex: 1;">${t('modal_cancel') || '取消'}</button>
-            <button id="${modalId}-reextract" class="menu_button ag-btn-retry" style="flex: 1;">${t('modal_reextract') || '重新提取'}</button>
-            <button id="${modalId}-confirm" class="menu_button ag-btn-confirm" style="flex: 1.5;">🚀 ${t('modal_start_gen') || '开始生图'}</button>
+            <button id="${modalId}-cancel" class="menu_button ag-action-btn ag-btn-cancel" style="flex: 1;"><i class="fa-solid fa-xmark"></i> ${t('modal_cancel') || '取消'}</button>
+            <button id="${modalId}-reextract" class="menu_button ag-action-btn ag-btn-retry" style="flex: 1;"><i class="fa-solid fa-rotate-left"></i> ${t('modal_reextract') || '重新提取'}</button>
+            <button id="${modalId}-confirm" class="menu_button ag-action-btn ag-btn-confirm" style="flex: 1.5;"><i class="fa-solid fa-rocket"></i> ${t('modal_start_gen') || '开始生图'}</button>
         </div>
     </div>
 </div>`;
 
 // [EN] Renders the step 3 modal for image selection
 // [ZH] 渲染步骤 3 (生成结果选图) 弹窗
-// 【修改点1】增加了 💾 存入图库按钮
-// 【修改点2】将 max-height 从 45vh 修改为 65vh，允许展示 3 行图片
-// 【修改点3】将底部包裹按钮的 div 修改为 display: grid，利用 auto-fit 实现手机端自动 2x2 网格防挤压
 export const getSelectImageTemplate = (modalId, imagesHtml, count, t) => `
 <div id="${modalId}" class="ag-modal-overlay">
-    <div class="ag-modal-box" style="max-width: 600px;">
-        <h3 style="margin-top: 0; text-align: center;">🖼️ ${t('modal_gallery_title') || '成功生成，请选择'} (${count})</h3>
+    <div class="ag-modal-box" style="max-width: 600px; padding-bottom: 10px;">
+        <h3 style="margin-top: 0; text-align: center; flex-shrink: 0;">🖼️ ${t('modal_gallery_title') || '成功生成，请选择'} (${count})</h3>
         
-        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-height: 65vh; overflow-y: auto; padding: 5px;">
+        <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; overflow-y: auto; padding: 5px; flex-grow: 1;">
             ${imagesHtml}
         </div>
         
-        <div id="${modalId}-error" style="text-align: center; color: #ff5252; height: 20px; margin-top: 5px; font-weight: bold;"></div>
+        <div id="${modalId}-error" style="text-align: center; color: #ff5252; min-height: 20px; margin-top: 5px; font-weight: bold; flex-shrink: 0;"></div>
         
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; margin-top: 5px;">
-            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel" style="margin: 0;">${t('modal_cancel') || '取消'}</button>
-            <button id="${modalId}-download" class="menu_button" style="margin: 0; background: #03a9f4; color: white;" title="保存当前选中的图片（绿框）到角色图库">💾 存入图库</button>
-            <button id="${modalId}-retry" class="menu_button ag-btn-retry" style="margin: 0;">🔙 ${t('modal_retry') || '重改提示词'}</button>
-            <button id="${modalId}-confirm" class="menu_button ag-btn-confirm" style="margin: 0;">✅ ${t('modal_confirm_replace') || '确定替换'}</button>
+        <div class="ag-action-grid">
+            <button id="${modalId}-cancel" class="menu_button ag-action-btn ag-btn-cancel"><i class="fa-solid fa-xmark"></i> ${t('modal_cancel') || '取消'}</button>
+            <button id="${modalId}-download" class="menu_button ag-action-btn ag-btn-save" title="保存当前选中的图片（绿框）到角色图库"><i class="fa-solid fa-floppy-disk"></i> 存入图库</button>
+            <button id="${modalId}-retry" class="menu_button ag-action-btn ag-btn-retry"><i class="fa-solid fa-rotate-left"></i> ${t('modal_retry') || '重改提示词'}</button>
+            <button id="${modalId}-confirm" class="menu_button ag-action-btn ag-btn-confirm"><i class="fa-solid fa-check"></i> ${t('modal_confirm_replace') || '确定替换'}</button>
         </div>
     </div>
 </div>`;

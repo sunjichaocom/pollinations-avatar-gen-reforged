@@ -1,6 +1,6 @@
 /* [EN] Modal Overlay Background / [ZH] 背景遮罩层 */
 .ag-modal-overlay { 
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh; /* 兼容带地址栏的移动端 */
     background: rgba(0,0,0,0.8); z-index: 99999; 
     display: flex; justify-content: center; align-items: center; 
     padding: 10px; box-sizing: border-box; opacity: 0; transition: opacity 0.2s; 
@@ -15,14 +15,15 @@
     display: flex; flex-direction: column; max-height: 90vh;
 }
 
-/* [EN] Mobile Fullscreen Adaptation / [ZH] 手机端专属全屏适配 */
+/* [EN] Mobile Fullscreen Adaptation / [ZH] 手机端专属全屏适配：使用 dvh 防止底部遮挡 */
 @media screen and (max-width: 768px) {
     .ag-modal-box {
         width: calc(100vw - 20px) !important;
-        height: calc(100vh - 100px) !important;
-        max-height: calc(100vh - 100px) !important;
+        height: 95dvh !important;
+        max-height: 95dvh !important;
         max-width: none !important;
         padding: 15px;
+        margin-bottom: env(safe-area-inset-bottom, 10px); /* 防 iOS/Android 底部黑条 */
     }
 }
 
@@ -36,25 +37,84 @@
 
 /* [EN] Base Component Styles / [ZH] 基础组件样式 */
 .ag-select { width: 100%; padding: 8px; background: rgba(0,0,0,0.3); color: white; border: 1px solid #555; border-radius: 4px; }
-.ag-btn-cancel { padding: 10px; background: #555; }
-.ag-btn-confirm { padding: 10px; background: #4CAF50; color: white; }
-.ag-btn-retry { padding: 10px; background: #ff9800; color: white; }
+
+/* [EN] Action Button Grid / [ZH] 底部操作按钮布局 */
+.ag-action-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    gap: 10px;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+/* 手机端强行一排 4 个按钮 */
+@media screen and (max-width: 480px) {
+    .ag-action-grid {
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        gap: 4px !important;
+    }
+    .ag-action-btn {
+        padding: 10px 2px !important;
+        font-size: 11px !important;
+        letter-spacing: -0.5px;
+    }
+    /* 【新增】精确分配宽度权重：削弱取消按钮，补偿重试按钮 */
+    .ag-btn-cancel { flex: 0.75 !important; }
+    .ag-btn-save { flex: 1 !important; }
+    .ag-btn-retry { flex: 1.25 !important; }
+    .ag-btn-confirm { flex: 1 !important; }
+}
+
+.ag-action-btn {
+    margin: 0 !important;
+    padding: 10px 5px !important;
+    border-radius: 8px !important;
+    font-size: 13px !important;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    cursor: pointer;
+}
+.ag-action-btn:active { transform: scale(0.96); }
+
+/* 现代半透明微光按钮样式 */
+.ag-btn-cancel { background: rgba(255, 255, 255, 0.1) !important; color: #ccc !important; }
+.ag-btn-cancel:hover { background: rgba(255, 255, 255, 0.2) !important; }
+
+.ag-btn-save { background: rgba(3, 169, 244, 0.15) !important; color: #03a9f4 !important; border-color: rgba(3, 169, 244, 0.5) !important; }
+.ag-btn-save:hover { background: rgba(3, 169, 244, 0.3) !important; }
+
+.ag-btn-retry { background: rgba(255, 152, 0, 0.15) !important; color: #ff9800 !important; border-color: rgba(255, 152, 0, 0.5) !important; }
+.ag-btn-retry:hover { background: rgba(255, 152, 0, 0.3) !important; }
+
+.ag-btn-confirm { background: rgba(76, 175, 80, 0.2) !important; color: #4CAF50 !important; border-color: #4CAF50 !important; box-shadow: 0 0 10px rgba(76, 175, 80, 0.1); }
+.ag-btn-confirm:hover { background: #4CAF50 !important; color: white !important; }
 
 /* [EN] Quick Tags / [ZH] 快捷标签 */
 .ag-quick-tag { padding: 4px 8px; font-size: 11px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 4px; cursor: pointer; transition: 0.2s; color: #eee; }
 .ag-quick-tag:hover { background: rgba(255,255,255,0.2); }
 
 /* [EN] Generated Images Grid / [ZH] 图片生成网格 */
-.ag-selectable-img { width: 100%; object-fit: cover; aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; background: #000; }
+.ag-selectable-img { width: 100%; object-fit: cover; aspect-ratio: 1; border-radius: 8px; cursor: pointer; border: 4px solid transparent; transition: 0.2s; background: #000; box-sizing: border-box; }
 .ag-selectable-img.selected { border-color: #4CAF50 !important; transform: scale(0.95); box-shadow: 0 4px 15px rgba(76, 175, 80, 0.5); filter: brightness(0.8); }
 
 /* [EN] Magnifying Glass Icon / [ZH] 放大镜图标 */
 .ag-mag-icon { position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 10; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
 .ag-mag-icon:hover { background: rgba(255,255,255,0.4); }
 
-/* [EN] Fullscreen Image Preview / [ZH] 全屏大图容器：完美居中 */
+/* 图片上的图钉/保留图标 */
+.ag-pin-icon { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); color: #ccc; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 10; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+.ag-pin-icon:hover { background: rgba(255,255,255,0.4); }
+.ag-pin-icon.pinned { color: #ffeb3b; background: rgba(0,0,0,0.8); box-shadow: 0 0 8px rgba(255, 235, 59, 0.5); transform: scale(1.1); }
+
+/* [EN] Fullscreen Image Preview / [ZH] 全屏大图容器 */
 #ag-fullscreen-preview { 
-    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; 
+    position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; height: 100dvh;
     background: rgba(0,0,0,0.9); z-index: 100000; display: none; 
     justify-content: center; align-items: center; cursor: ew-resize; user-select: none; 
 }
@@ -64,8 +124,3 @@
     transition: transform 0.1s ease-out;
     transform-origin: center center;
 }
-
-/* 图片上的图钉/保留图标 */
-.ag-pin-icon { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); color: #ccc; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 10; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
-.ag-pin-icon:hover { background: rgba(255,255,255,0.4); }
-.ag-pin-icon.pinned { color: #ffeb3b; background: rgba(0,0,0,0.8); box-shadow: 0 0 8px rgba(255, 235, 59, 0.5); transform: scale(1.1); }

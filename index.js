@@ -53,6 +53,41 @@ function injectIntoDropdown() {
     }
 }
 
+// ================= 新增：智能蹲点插队逻辑 =================
+function repositionPlugin() {
+    let attempts = 0;
+    const timer = setInterval(() => {
+        // 精准寻找原生“图像生成”的菜单项和设置面板
+        const nativeMenu = $('#extensionsMenu').find('[data-i18n="Image Generation"], #imagen_menu').closest('.list-group-item');
+        const nativePanel = $('#imagen_settings');
+        
+        // 寻找咱们插件自己的菜单项和设置面板
+        const myMenu = $('#extensionsMenu').find(`[onclick*="${extensionName}"]`).closest('.list-group-item');
+        const myPanel = $('.avatar-generator-settings');
+
+        let movedMenu = false;
+        let movedPanel = false;
+
+        // 如果原生的菜单加载出来了，执行插队
+        if (nativeMenu.length && myMenu.length) {
+            myMenu.insertAfter(nativeMenu.last());
+            movedMenu = true;
+        }
+        
+        // 如果原生的面板加载出来了，执行插队
+        if (nativePanel.length && myPanel.length) {
+            myPanel.insertAfter(nativePanel);
+            movedPanel = true;
+        }
+
+        // 如果两个都插队成功了，或者尝试超过了20次（约10秒，避免死循环），就停止蹲点
+        if ((movedMenu && movedPanel) || ++attempts > 20) {
+            clearInterval(timer);
+        }
+    }, 500);
+}
+// ==========================================================
+
 jQuery(async () => {
     // [EN] Initialize language pack based on browser config
     // [ZH] 初始化语言包
@@ -69,10 +104,11 @@ jQuery(async () => {
     loadSettings();
     addSettingsUI();
     
-    // [EN] Bind unified timer to monitor and inject dual entry points continuously
-    // [ZH] 将双入口合并到一个定时器中循环检测挂载，以应对 ST 界面重绘
-    setInterval(() => {
-        injectActionRowButton();
-        injectIntoDropdown();
-    }, 1000);
+    // [EN] Try injecting buttons when DOM is modified
+    // [ZH] 监听 DOM 变化以动态注入入口按钮
+    const observer = new MutationObserver(() => { injectActionRowButton(); injectIntoDropdown(); });
+    observer.observe(document.body, { childList: true, subtree: true });
+    
+    // 启动智能插队，防止异步加载导致的乱序
+    repositionPlugin();
 });

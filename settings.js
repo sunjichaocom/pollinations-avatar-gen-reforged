@@ -215,4 +215,16 @@ export function addSettingsUI() {
     });
 
     populateModelDropdowns();
+    
+    // 【新增】自动读取 manifest.json 中的真实版本号
+    fetch(`/scripts/extensions/third-party/${extensionName}/manifest.json`)
+        .then(res => res.json())
+        .then(data => {
+            const v = data.version || 'Unknown';
+            $("#ag_version_info").text(`v${v}`);
+        })
+        .catch(() => {
+            // 如果读取失败，给个保底显示
+            $("#ag_version_info").text(`v1.0.0`);
+        });
 }
