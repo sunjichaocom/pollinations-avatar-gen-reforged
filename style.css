@@ -60,5 +60,12 @@
 }
 #ag-fullscreen-preview img { 
     max-width: 95vw; max-height: 95vh; object-fit: contain; 
-    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 8px; pointer-events: none; margin: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8); border-radius: 8px; margin: auto;
+    transition: transform 0.1s ease-out;
+    transform-origin: center center;
 }
+
+/* 图片上的图钉/保留图标 */
+.ag-pin-icon { position: absolute; top: 5px; left: 5px; background: rgba(0,0,0,0.6); color: #ccc; padding: 8px; border-radius: 50%; cursor: pointer; z-index: 10; transition: 0.2s; display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; }
+.ag-pin-icon:hover { background: rgba(255,255,255,0.4); }
+.ag-pin-icon.pinned { color: #ffeb3b; background: rgba(0,0,0,0.8); box-shadow: 0 0 8px rgba(255, 235, 59, 0.5); transform: scale(1.1); }

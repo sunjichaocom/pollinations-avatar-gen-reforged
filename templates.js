@@ -161,10 +161,11 @@ export const getConfirmPromptTemplate = (modalId, modelOptions, tagsHtml, t) => 
 
 // [EN] Renders the step 3 modal for image selection
 // [ZH] 渲染步骤 3 (生成结果选图) 弹窗
+// 【修改点】增加了 💾 存入图库按钮
 export const getSelectImageTemplate = (modalId, imagesHtml, count, t) => `
 <div id="${modalId}" class="ag-modal-overlay">
     <div class="ag-modal-box" style="max-width: 600px;">
-        <h3 style="margin-top: 0; text-align: center;">🖼️ ${t('modal_gallery_title')} (${count})</h3>
+        <h3 style="margin-top: 0; text-align: center;">🖼️ ${t('modal_gallery_title') || '成功生成，请选择'} (${count})</h3>
         
         <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; max-height: 45vh; overflow-y: auto; padding: 5px;">
             ${imagesHtml}
@@ -172,9 +173,10 @@ export const getSelectImageTemplate = (modalId, imagesHtml, count, t) => `
         
         <div id="${modalId}-error" style="text-align: center; color: #ff5252; height: 20px; margin-top: 5px; font-weight: bold;"></div>
         <div style="display: flex; justify-content: space-between; gap: 8px; margin-top: 10px; flex-wrap: wrap;">
-            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel" style="flex: 1; min-width: 25%;">${t('modal_cancel')}</button>
-            <button id="${modalId}-retry" class="menu_button ag-btn-retry" style="flex: 1; min-width: 30%;">🔙 ${t('modal_retry')}</button>
-            <button id="${modalId}-confirm" class="menu_button ag-btn-confirm" style="flex: 1.5; min-width: 30%;">✅ ${t('modal_confirm_replace')}</button>
+            <button id="${modalId}-cancel" class="menu_button ag-btn-cancel" style="flex: 1; min-width: 20%;">${t('modal_cancel') || '取消'}</button>
+            <button id="${modalId}-download" class="menu_button" style="flex: 1; min-width: 20%; background: #03a9f4; color: white;" title="保存到角色的展示图库">💾 存入图库</button>
+            <button id="${modalId}-retry" class="menu_button ag-btn-retry" style="flex: 1; min-width: 20%;">🔙 重改提示词</button>
+            <button id="${modalId}-confirm" class="menu_button ag-btn-confirm" style="flex: 1.5; min-width: 30%;">✅ 确定替换</button>
         </div>
     </div>
 </div>`;

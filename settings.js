@@ -42,7 +42,8 @@ export function loadSettings() {
 // [ZH] API 并发请求检查所有 Pollinations 账号余额 (带详细账单，优化显示颜色与精度)
 async function checkBalance() {
     const tokenStr = extension_settings[extensionName].pollinationsToken;
-    const keys = tokenStr ? tokenStr.split(/[\n,]+/).map(k => k.trim()).filter(k => k) : [];
+    // 【核心修改】只抓取 sk_ 开头的合法 Key，其它的当作注释忽略
+    const keys = tokenStr ? tokenStr.split(/[\n,]+/).map(k => k.trim()).filter(k => k.startsWith('sk_')) : [];
     
     if (keys.length === 0) return toastr.warning(t('toast_need_api_key'), TOAST_TITLE);
     
@@ -60,7 +61,7 @@ async function checkBalance() {
             if (res.ok) {
                 const data = await res.json();
                 const bal = typeof data.balance === 'number' ? data.balance : 0;
-                extension_settings[extensionName].keyBalances[token] = bal; // 运算保持原值
+                extension_settings[extensionName].keyBalances[token] = bal; 
                 return { success: true, key: maskedKey, balance: bal };
             }
             return { success: false, key: maskedKey };
@@ -72,7 +73,6 @@ async function checkBalance() {
     results.forEach(r => {
         if (r.success) {
             totalBalance += r.balance;
-            // [修改点]：数值统一保留 5 位小数，颜色改为黄色 (#FFEB3B) 以便在绿色背景下看清
             detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.9; font-family:monospace;">${r.key}</span> <b style="color:#FFEB3B">${r.balance.toFixed(5)} 💎</b></div>`;
         } else {
             detailsHtml += `<div style="display:flex; justify-content:space-between; margin-bottom:2px;"><span style="opacity:0.9; font-family:monospace;">${r.key}</span> <b style="color:#ffb7b7">❌ Error</b></div>`;
