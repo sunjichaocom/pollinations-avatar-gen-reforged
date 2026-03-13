@@ -53,35 +53,37 @@ function injectIntoDropdown() {
     }
 }
 
-// ================= 新增：智能蹲点插队逻辑 =================
+// ================= 新增：智能蹲点插队逻辑 (修复争宠互顶Bug) =================
 function repositionPlugin() {
     let attempts = 0;
+    // 【核心修复】：把状态标记移到定时器外部，只要成功一次就锁死！
+    let menuMoved = false;
+    let panelMoved = false;
+
     const timer = setInterval(() => {
+        attempts++;
         // 精准寻找原生“图像生成”的菜单项和设置面板
-        const nativeMenu = $('#extensionsMenu').find('[data-i18n="Image Generation"], #imagen_menu').closest('.list-group-item');
-        const nativePanel = $('#imagen_settings');
+        const nativeMenu = $('#extensionsMenu').find('[data-i18n="Image Generation"]').closest('.list-group-item');
+        const nativePanel = $('#sd_container');
         
         // 寻找咱们插件自己的菜单项和设置面板
         const myMenu = $('#extensionsMenu').find(`[onclick*="${extensionName}"]`).closest('.list-group-item');
         const myPanel = $('.avatar-generator-settings');
 
-        let movedMenu = false;
-        let movedPanel = false;
-
-        // 如果原生的菜单加载出来了，执行插队
-        if (nativeMenu.length && myMenu.length) {
+        // 如果原生的菜单加载出来了，且还没插过队，执行插队并锁死
+        if (!menuMoved && nativeMenu.length && myMenu.length) {
             myMenu.insertAfter(nativeMenu.last());
-            movedMenu = true;
+            menuMoved = true;
         }
         
-        // 如果原生的面板加载出来了，执行插队
-        if (nativePanel.length && myPanel.length) {
+        // 如果原生的面板加载出来了，且还没插过队，执行插队并锁死
+        if (!panelMoved && nativePanel.length && myPanel.length) {
             myPanel.insertAfter(nativePanel);
-            movedPanel = true;
+            panelMoved = true;
         }
 
-        // 如果两个都插队成功了，或者尝试超过了20次（约10秒，避免死循环），就停止蹲点
-        if ((movedMenu && movedPanel) || ++attempts > 20) {
+        // 如果两个都插队成功了，或者尝试超过20次，彻底停手
+        if ((menuMoved && panelMoved) || attempts > 20) {
             clearInterval(timer);
         }
     }, 500);
